@@ -75,6 +75,7 @@ class Unet(object):
             tf.int32, name='m_iou/weights')
         self.m_iou, self.miou_op = tf.metrics.mean_iou(
             self.annotations, self.decoded_predictions, self.conf.class_num, weights, name='m_iou/m_ious')
+
         # Flatten the input if its rank > 1.
         predictions = self.decoded_predictions
         if predictions.get_shape().ndims > 1:
@@ -304,7 +305,6 @@ class Unet(object):
 
         print("Conv:")
         print(outputs.shape)
-
         return outputs
 
     def construct_up_block_4_sub_pixel(self, inputs, down_inputs, name, final=False):
@@ -312,6 +312,7 @@ class Unet(object):
         print("Inputs:")
         print(inputs.shape)
         num_outputs = inputs.shape[self.channel_axis].value
+
         # producing r times more feature maps
         conv1 = tf.contrib.layers.conv2d(
             inputs, num_outputs * self.conf.ratio, self.conv_size, scope=name + '/conv_sub_pixel',
@@ -341,6 +342,7 @@ class Unet(object):
             conv2, num_outputs, self.conv_size, name + '/conv3', activation=self.conf.activation_function)
         print("Conv:")
         print(conv3.shape)
+
         return conv3
 
     def construct_up_block_5_sub_pixel(self, inputs, down_inputs, name, first=False, final=False):
@@ -448,7 +450,6 @@ class Unet(object):
                              self.annotations: annotations}
                 loss, summary = self.sess.run(
                     [self.loss_op, self.valid_summary], feed_dict=feed_dict)
-                #loss, m_iou, _, summary = self.sess.run([self.loss_op, self.m_iou, self.miou_op, self.valid_summary], feed_dict=feed_dict)
                 self.save_summary(summary, epoch_num+self.conf.reload_step)
                 print("Step: %d, Test_loss:%g" % (epoch_num, loss))
             if epoch_num % self.conf.summary_interval == 0:
